@@ -9,6 +9,8 @@ import database.BookDAO;
 import entities.Book;
 import database.MemberDAO;
 import entities.Member;
+import database.BorrowingDAO;
+import entities.Borrowing;
 import java.util.Scanner;
 /**
  *
@@ -26,6 +28,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         BookDAO bookDAO = new BookDAO();
         MemberDAO memberDAO = new MemberDAO();
+        BorrowingDAO borrowingDAO = new BorrowingDAO();
         
         int choice;
         
@@ -35,13 +38,18 @@ public class Main {
             System.out.println("2. Add a book");
             System.out.println("3. Update a book");
             System.out.println("4. Delete a book");
-            System.out.println("=======================");
+            System.out.println("========================");
             System.out.println("5. Show all members");
             System.out.println("6. Add member");
             System.out.println("7. Update a member");
             System.out.println("8. Delete a member");
             System.out.println("========================");
-            System.out.println("9. Exit");
+            System.out.println("9. Show all borrowings");
+            System.out.println("10. Add borrowing");
+            System.out.println("11. Update borrowing status");
+            System.out.println("========================");
+            System.out.println("12. Exit");
+            System.out.println("========================");
             System.out.print("Enter your choice: ");
             
             choice = scanner.nextInt();
@@ -125,13 +133,42 @@ public class Main {
                     memberDAO.deleteMemberById(deleteId);
                     break;
                 case 9:
+                    borrowingDAO.getAllBorrowings();
+                    break;
+                case 10:
+                    System.out.print("Enter book ID: ");
+                    int bookId = scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.print("Enter member ID: ");
+                    int memberId = scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.print("Enter borrow date (YYYY-MM-DD): ");
+                    String borrowDate = scanner.nextLine();
+                    System.out.print("Enter due date (YYYY-MM-DD): ");
+                    String dueDate = scanner.nextLine();
+                    System.out.print("Enter status: ");
+                    String status = scanner.nextLine();
+                    
+                    Borrowing borrowing = new Borrowing(0, bookId, memberId, borrowDate, dueDate, status);
+                    borrowingDAO.addBorrowing(borrowing);
+                    break;
+                case 11:
+                    System.out.print("Enter borrowing ID: ");
+                    int borrowingId = scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.print("Enter new status: ");
+                    String newStatus = scanner.nextLine();
+                    
+                    borrowingDAO.updateBorrowingStatus(borrowingId, newStatus);
+                    break;
+                case 12:
                     System.out.println("Exiting system...");
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
 
-        } while (choice != 9);
+        } while (choice != 12);
         scanner.close();
         
          
