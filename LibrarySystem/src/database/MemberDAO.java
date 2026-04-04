@@ -87,4 +87,26 @@ public class MemberDAO {
             System.out.println("Error updating a member: " + e.getMessage());
         }
     }
-}
+    public void searchMemberById(int id){
+        String sql = "SELECT * FROM Members WHERE ID = ?";
+        
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+                 pstmt.setInt(1, id);
+                 ResultSet rs = pstmt.executeQuery();
+                 if(rs.next()){
+                     int memberId = rs.getInt("ID");
+                     String name = rs.getString("Name");
+                     String email = rs.getString("Email");
+                     String type = rs.getString("Type");
+                     System.out.println("ID: " + memberId + 
+                                        ", Name: " + name +
+                                        ", Email: " + email + 
+                                        ", Type: " + type);
+                 } else {
+                     System.out.println("No member found with that ID");
+               }
+            } catch (SQLException e){
+                System.out.println("Error searching for member: " + e.getMessage());
+            }        
+   }    }

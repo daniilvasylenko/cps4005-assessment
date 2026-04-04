@@ -91,6 +91,31 @@ public class BookDAO {
             System.out.println("Error updating book: " + e.getMessage());
         }
     }
+    public void searchBookById(int id){
+        String sql = "SELECT * FROM Books WHERE ID = ?";
+        
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()){
+                int bookId = rs.getInt("ID");
+                String title = rs.getString("Title");
+                String author = rs.getString("Author");
+                String category = rs.getString("Category");
+                int available = rs.getInt("Available");
+                System.out.println("ID: " + bookId + 
+                                   ", Title: " + title + 
+                                   ", Author: " + author + 
+                                   ", Category: " + category + 
+                                   ", Available: " + (available == 1 ? "Yes" : "No"));
+            } else {
+                System.out.println("No book found with that ID");
+            }
+        } catch (SQLException e){
+            System.out.println("Error searching for book: " + e.getMessage());
+        }
+    }
     
 }
 

@@ -38,17 +38,20 @@ public class Main {
             System.out.println("2. Add a book");
             System.out.println("3. Update a book");
             System.out.println("4. Delete a book");
+            System.out.println("5. Search by book ID");
             System.out.println("========================");
-            System.out.println("5. Show all members");
-            System.out.println("6. Add member");
-            System.out.println("7. Update a member");
-            System.out.println("8. Delete a member");
+            System.out.println("6. Show all members");
+            System.out.println("7. Add member");
+            System.out.println("8. Update a member");
+            System.out.println("9. Delete a member");
+            System.out.println("10. Search by member ID");
             System.out.println("========================");
-            System.out.println("9. Show all borrowings");
-            System.out.println("10. Add borrowing");
-            System.out.println("11. Update borrowing status");
+            System.out.println("11. Show all borrowings");
+            System.out.println("12. Add borrowing");
+            System.out.println("13. Update borrowing status");
+            System.out.println("14. Search borrowings by member ID");
             System.out.println("========================");
-            System.out.println("12. Exit");
+            System.out.println("15. Exit");
             System.out.println("========================");
             System.out.print("Enter your choice: ");
             
@@ -69,6 +72,11 @@ public class Main {
                     System.out.print("Is this book available? (true/false): ");
                     boolean available = scanner.nextBoolean();
                     scanner.nextLine();
+                    
+                    if (isEmpty(title) || isEmpty(author) || isEmpty(category)){
+                        System.out.println("Book fields cannot be empty");
+                        break;
+                    }
                     
                     Book newBook = new Book(0, title, author, category, available);
                     bookDAO.addBook(newBook);
@@ -98,9 +106,16 @@ public class Main {
                     bookDAO.deleteBookById(deleteID);
                     break;
                 case 5:
-                    memberDAO.getAllMembers();
+                    System.out.print("Enter book ID to search: ");
+                    int searchBookId = scanner.nextInt();
+                    scanner.nextLine();
+                    
+                    bookDAO.searchBookById(searchBookId);
                     break;
                 case 6:
+                    memberDAO.getAllMembers();
+                    break;
+                case 7:
                     System.out.print("Enter name: ");
                     String name = scanner.nextLine();
                     System.out.print("Enter email: ");
@@ -108,10 +123,23 @@ public class Main {
                     System.out.print("Enter type: ");
                     String type = scanner.nextLine();
                     
+                    if(isEmpty(name) || isEmpty(email) || isEmpty(type)){
+                        System.out.println("Member fields cannot be empty");
+                        break;
+                    }
+                    if(!isValidEmail(email)){
+                        System.out.println("Invalid email format");
+                        break;
+                    }
+                    if(!isValidMemberType(type)){
+                        System.out.println("Member type must be Student or Staff");
+                        break;
+                    }
+                    
                     Member newMember = new Member(0, name, email, type);
                     memberDAO.addMember(newMember);
                     break;
-                case 7:
+                case 8:
                     System.out.print("Enter member ID to update: ");
                     int updateID = scanner.nextInt();
                     scanner.nextLine();
@@ -125,17 +153,24 @@ public class Main {
                     Member updatedMember = new Member(updateID, newName, newEmail, newType);
                     memberDAO.updateMember(updatedMember);
                     break;
-                case 8: 
+                case 9: 
                     System.out.print("Enter member ID to delete: ");
                     int deleteId = scanner.nextInt();
                     scanner.nextLine();
                     
                     memberDAO.deleteMemberById(deleteId);
                     break;
-                case 9:
+                case 10:
+                    System.out.print("Enter member ID to search: ");
+                    int searchMemberId = scanner.nextInt();
+                    scanner.nextLine();
+                    
+                    memberDAO.searchMemberById(searchMemberId);
+                    break;
+                case 11:
                     borrowingDAO.getAllBorrowings();
                     break;
-                case 10:
+                case 12:
                     System.out.print("Enter book ID: ");
                     int bookId = scanner.nextInt();
                     scanner.nextLine();
@@ -149,28 +184,65 @@ public class Main {
                     System.out.print("Enter status: ");
                     String status = scanner.nextLine();
                     
+                    if(bookId <= 0 || memberId <= 0){
+                        System.out.println("Book ID and Member ID must be positive numbers");
+                        break;
+                    }
+                    if(isEmpty(borrowDate) || isEmpty(dueDate) || isEmpty(status)){
+                        System.out.println("Borrowing fields cannot be empty");
+                        break;
+                    }
+                    if(!isValidBorrowingStatus(status)){
+                        System.out.println("Status must be Borrowed or Returned");
+                        break;
+                    }
+                    
                     Borrowing borrowing = new Borrowing(0, bookId, memberId, borrowDate, dueDate, status);
                     borrowingDAO.addBorrowing(borrowing);
                     break;
-                case 11:
+                case 13:
                     System.out.print("Enter borrowing ID: ");
                     int borrowingId = scanner.nextInt();
                     scanner.nextLine();
                     System.out.print("Enter new status: ");
                     String newStatus = scanner.nextLine();
                     
+                    if(!isValidBorrowingStatus(newStatus)){
+                        System.out.println("Status must be Borrowed or Returned");
+                        break;
+                    }
+                    
                     borrowingDAO.updateBorrowingStatus(borrowingId, newStatus);
                     break;
-                case 12:
+                case 14:
+                    System.out.print("Enter member ID to search: ");
+                    int searchMemberBorrowingId = scanner.nextInt();
+                    scanner.nextLine();
+                    
+                    borrowingDAO.searchBorrowingByMemberId(searchMemberBorrowingId);
+                    break;
+                case 15:
                     System.out.println("Exiting system...");
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
 
-        } while (choice != 12);
+        } while (choice != 15);
         scanner.close();
         
-         
+    }
+    private static boolean isEmpty(String value){
+            return value == null || value.trim().isEmpty();
+        }
+    private static boolean isValidEmail(String email){
+        return email !=null && email.contains("@") && email.contains(".");
+    }
+    private static boolean isValidMemberType(String type){
+        return type.equalsIgnoreCase("Student") || type.equalsIgnoreCase("Staff");
+    }
+    private static boolean isValidBorrowingStatus(String status){
+        return status.equalsIgnoreCase("Borrowed") || status.equalsIgnoreCase("Returned");
     }
 }
+

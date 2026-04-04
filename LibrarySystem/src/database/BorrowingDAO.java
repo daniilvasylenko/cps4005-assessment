@@ -5,7 +5,6 @@
 package database;
 import core.DBConnection;
 import entities.Borrowing;
-import entities.Book;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -17,8 +16,32 @@ import java.sql.SQLException;
  */
 public class BorrowingDAO {
     public void addBorrowing(Borrowing borrowing){
+        String checkAvailabilitySql = "SELECT Available FROM Books WHERE ID = ?";
         String sql = "INSERT INTO Borrowings(\"Book ID\", \"Member ID\", \"Borrow Date\", \"Due Date\", \"Status\") VALUES (?, ?, ?, ?, ?)";
+        String updateBookSql = "UPDATE Books SET Available = ? WHERE ID = ?";
         
+        try(Connection conn = DBConnection.connect()){
+            int available = -1;
+            
+            try(PreparedStatement checkStmt = conn.prepareStatement(checkAvailabilitySql)){
+                checkStmt.setInt(1, borrowing.getBookId());
+                ResultSet rs = checkStmt.executeQuery();
+                
+                if(rs.next()){
+                    available = rs.getInt("Available");
+                } else{
+                    System.out.println("Book not found");
+                    return;
+                }
+                if(available == 0){
+                    System.out.println("The book is currently unavailable");
+                    return;
+                }
+            
+            } 
+            } catch(SQLException e){
+                System.out.println("Error checking availability: " + e.getMessage());  
+        }   
         
         try (Connection conn = DBConnection.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)){
@@ -30,6 +53,13 @@ public class BorrowingDAO {
             pstmt.setString(5, borrowing.getStatus());
             
             pstmt.executeUpdate();
+            if (borrowing.getStatus().equalsIgnoreCase("Borrowed")){
+                try (PreparedStatement updateStmt = conn.prepareStatement(updateBookSql)){
+                    updateStmt.setInt(1, 0);
+                    updateStmt.setInt(2, borrowing.getBookId());
+                    updateStmt.executeUpdate();
+                }
+            }
             System.out.println("Borrowing added successfully");
         } catch (SQLException e){
             System.out.println("Error adding borrowing: " + e.getMessage());
@@ -57,7 +87,7 @@ public class BorrowingDAO {
                                    ", Status: " + status);
             }
         } catch (SQLException e){
-            System.out.println("Error retrieving borrowings" + e.getMessage());
+            System.out.println("Error retrieving borrowings: " + e.getMessage());
         }
     }
     public void updateBorrowingStatus(int borrowingId, String newStatus){
@@ -106,5 +136,39 @@ public class BorrowingDAO {
             System.out.println("Error updating borrowing status: " + e.getMessage());
         }
         
+    }
+    public void searchBorrowingByMemberId(int id){
+        String sql = "SELECT * FROM Borrowings WHERE \"Member ID\" = ?";
+        
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            boolean found = false;
+            
+            while(rs.next()){
+                found = true;
+                int borrowingId = rs.getInt("ID");
+                int memberID = rs.getInt("Member ID");
+                int bookId = rs.getInt("Book ID");
+                String borrowDate = rs.getString("Borrow Date");
+                String dueDate = rs.getString("Due Date");
+                String status = rs.getString("Status");
+                System.out.println("ID: " + borrowingId + 
+                                   ", Member ID: " + memberID +
+                                   ", Book ID: " + bookId + 
+                                   ", Borrow Date: " + borrowDate +
+                                   ", Due Date: " + dueDate +
+                                   ", Status: " + status);
+            } 
+            if(!found){
+                System.out.println("No borrowing found for this member");
+            }
+            
+        } catch (SQLException e){
+            System.out.println("Error searching for borrowing: " + e.getMessage());
+        } 
+                
+                
     }
 }
