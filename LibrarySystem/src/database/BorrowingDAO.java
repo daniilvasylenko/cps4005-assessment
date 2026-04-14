@@ -167,8 +167,53 @@ public class BorrowingDAO {
             
         } catch (SQLException e){
             System.out.println("Error searching for borrowing: " + e.getMessage());
-        } 
-                
-                
+        }            
+    }
+    public void searchBorrowingByBookId(int bookId){
+        String sql = "SELECT * FROM Borrowings WHERE \"Book ID\" = ?";
+        
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, bookId);
+            ResultSet rs = pstmt.executeQuery();
+            boolean found = false;
+            
+            while(rs.next()){
+                found = true;
+                int borrowingId = rs.getInt("ID");
+                int memberId = rs.getInt("Member ID");
+                int bookID = rs.getInt("Book ID");
+                String borrowDate = rs.getString("Borrow Date");
+                String dueDate = rs.getString("Due Date");
+                String status = rs.getString("Status");
+                System.out.println("ID: " + borrowingId + 
+                                   ", Member ID: " + memberId + 
+                                   ", Book ID: " + bookID + 
+                                   ", Borrow Date: " + borrowDate +
+                                   ", Due Date: " + dueDate + 
+                                   ", Status: " + status);
+            }
+            if(!found){
+                System.out.println("No borrowing found for this book");
+            }
+        } catch (SQLException e){
+            System.out.println("Error searching for borrowing: " + e.getMessage());
+        }
+    }
+    public void deleteBorrowingById(int id){
+        String sql = "DELETE FROM Borrowings WHERE ID = ?";
+        
+        try(Connection conn = DBConnection.connect();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, id);
+            int rowsAffected = pstmt.executeUpdate();
+            if(rowsAffected > 0){
+                System.out.println("Borrowing deleted successfully");
+            } else{
+                System.out.println("No borrowing found with that ID");
+            }
+        } catch (SQLException e){
+            System.out.println("Error deleting a borrowing: " + e.getMessage());
+        }
     }
 }

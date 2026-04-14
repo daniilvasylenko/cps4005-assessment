@@ -107,6 +107,33 @@ public class MemberDAO {
                      System.out.println("No member found with that ID");
                }
             } catch (SQLException e){
-                System.out.println("Error searching for member: " + e.getMessage());
+                System.out.println("Error searching for a member: " + e.getMessage());
             }        
-   }    }
+    }
+    public void searchMemberByName(String name){
+        String sql = "SELECT * FROM Members WHERE Name LIKE ?";
+        
+        try(Connection conn = DBConnection.connect();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1, "%" + name + "%");
+            ResultSet rs = pstmt.executeQuery();
+            boolean found = false;
+            while(rs.next()){
+                found = true;
+                int id = rs.getInt("ID");
+                String memberName = rs.getString("Name");
+                String email = rs.getString("Email");
+                String type = rs.getString("Type");
+                System.out.println("ID: " + id + 
+                                   ", Name: " + memberName +
+                                   ", Email: " + email +
+                                   ", Type: " + type);
+            }
+            if(!found){
+                System.out.println("No member found with that name");
+            }
+        } catch (SQLException e){
+            System.out.println("Error searching for a member: " + e.getMessage());
+        }
+    }
+}   

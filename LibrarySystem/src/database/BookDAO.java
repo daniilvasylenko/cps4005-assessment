@@ -113,8 +113,37 @@ public class BookDAO {
                 System.out.println("No book found with that ID");
             }
         } catch (SQLException e){
-            System.out.println("Error searching for book: " + e.getMessage());
+            System.out.println("Error searching for a book: " + e.getMessage());
         }
+    }
+    public void searchBookByTitleOrAuthor(String keyword){
+        String sql = "SELECT * FROM Books WHERE Title LIKE ? OR Author LIKE ?";
+        
+        try(Connection conn = DBConnection.connect();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1, "%" + keyword + "%");
+            pstmt.setString(2, "%" + keyword + "%");
+            ResultSet rs = pstmt.executeQuery();
+            boolean found = false;
+            while(rs.next()){
+                found = true;
+                int bookId = rs.getInt("ID");
+                String title = rs.getString("Title");
+                String author = rs.getString("Author");
+                String category = rs.getString("Category");
+                int available = rs.getInt("Available");
+                System.out.println("ID: " + bookId +
+                                   ", Title: " + title + 
+                                   ", Author: " + author + 
+                                   ", Category: " + category + 
+                                   ", Available: " + (available == 1 ? "Yes" : "No"));
+            }
+            if(!found){
+                System.out.println("No books found with that title or author");
+            }
+        } catch (SQLException e){
+            System.out.println("Error searching for a book: " + e.getMessage());
+        } 
     }
     
 }
